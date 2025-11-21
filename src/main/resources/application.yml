@@ -1,0 +1,42 @@
+server:
+  port: 3002
+
+gpr:
+  username: ${GITHUB_ACTOR}
+  token: ${GH_PAT}
+
+spring:
+  application:
+    name: product-service
+  config:
+    import: 'optional:configserver:'
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+  datasource:
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true       # 쿼리 로그 보기
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+eureka:
+  instance:
+    prefer-ip-address: false
+    hostname: code-factory.co.kr
+
+  client:
+    register-with-eureka: true #유레카 서버 이외에 다 붙여야 함
+    fetch-registry: true #클라이언트 측에서 유레카에 의존하지 않고 로드밸런싱 할 수 있도록 설정 가져옴
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:3150/eureka/
+
