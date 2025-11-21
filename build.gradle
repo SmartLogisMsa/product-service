@@ -30,7 +30,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.github.smartlogismsa:common-module:v0.0.7'
+    implementation 'com.github.smartlogismsa:common-module:v0.0.10'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
