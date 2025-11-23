@@ -4,8 +4,10 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.smartlogis.common.domain.AbstractEntity;
 import com.smartlogis.productservice.domain.exception.InsufficientStockException;
+import com.smartlogis.productservice.domain.exception.InvalidChangeTypeException;
 import com.smartlogis.productservice.domain.exception.InvalidCompanyIdException;
 import com.smartlogis.productservice.domain.exception.InvalidHubIdException;
 import com.smartlogis.productservice.domain.exception.InvalidManagerIdException;
@@ -156,28 +158,54 @@ public class Product extends AbstractEntity {
 	//=======================================
 
 	//3. 재고 관련 메서드
-	// 재고 감소
-	public void decreaseStock(int quantity){
+
+	//재고 관리 메서드
+	public StockHistory recordStockChange(
+		ChangeType changeType,
+		int quantity,
+		ChangeSource changeSource
+	){
 		if(quantity <= 0){
-			//유효하지 않은 상품 개수
 			throw new InvalidQuantityException(ProductCode.INVALID_QUANTITY);
 		}
-		if(stock < quantity){
-			//재고 부족
-			throw new InsufficientStockException(ProductCode.INSUFFICIENT_STOCK);
+
+		int before = this.stock;
+		int after;
+
+		//변경 타입별 재고 변화
+		switch (changeType) {
+			case STOCK_IN ->  {
+				after = before + quantity;
+			}
+
+			case STOCK_OUT ->  {
+				if(before < quantity){
+					throw new InsufficientStockException(ProductCode.INSUFFICIENT_STOCK);
+				}
+				after = before - quantity;
+			}
+
+			case RETURNED ->  {
+				after = before + quantity;
+			}
+
+			default -> {
+				throw new InvalidChangeTypeException(ProductCode.INVALID_CHANGE_TYPE);
+			}
 		}
 
-		stock -= quantity;
+		this.stock = after;
+
+		return StockHistory.create(
+			this.id,
+			changeType,
+			quantity,
+			before,
+			after,
+			changeSource
+		);
 	}
 
-	// 재고 추가
-	public void addStock(int quantity){
-		if(quantity <= 0){
-			//유효하지 않은 상품 개수
-			throw new InvalidQuantityException(ProductCode.INVALID_QUANTITY);
-		}
-		stock += quantity;
-	}
 
 	// 임계치 이하인지 판단
 	public boolean isStockBelowThreshold(){
