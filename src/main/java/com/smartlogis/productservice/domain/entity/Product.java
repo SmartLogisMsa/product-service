@@ -183,6 +183,11 @@ public class Product extends AbstractEntity {
 
 		//변경 타입별 재고 변화
 		switch (changeType) {
+			case INITIAL -> {
+				before = 0;
+				after = quantity;
+			}
+
 			case STOCK_IN ->  {
 				after = before + quantity;
 			}

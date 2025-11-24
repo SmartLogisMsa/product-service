@@ -51,13 +51,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			.where(builder)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.orderBy(
-				QuerydslSortUtils.toOrderSpecifiers(
-					Product.class,
-					"createdAt",
-					pageable.getSort()
-				)
-			)
+			.orderBy(product.createdAt.desc())
 			.fetch();
 
 		return new PageImpl<>(products, pageable, total);

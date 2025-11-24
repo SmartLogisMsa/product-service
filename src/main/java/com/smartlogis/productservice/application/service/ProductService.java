@@ -54,7 +54,7 @@ public class ProductService {
 		//최초 상품 입고 기록
 		if(savedProduct.getStock() > 0){
 			StockHistory stockHistory = savedProduct.recordStockChange(
-				ChangeType.STOCK_IN,
+				ChangeType.INITIAL,
 				savedProduct.getStock(),
 				ChangeSource.COMPANY_SERVICE
 			);
