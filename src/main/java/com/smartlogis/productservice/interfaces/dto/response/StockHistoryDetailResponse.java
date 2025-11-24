@@ -22,7 +22,7 @@ import lombok.Setter;
 @Schema(description = "상품 재고 내역 상세 조회 응답")
 public class StockHistoryDetailResponse {
 
-	@Schema(description = "상품 id", example = "a1b2c3d4-e5f6-7890-abcd-ef0123456789", nullable = false)
+	@Schema(description = "재고 내역 id", example = "a1b2c3d4-e5f6-7890-abcd-ef0123456789", nullable = false)
 	private UUID id;
 
 	@Schema(description = "재고 변경 타입", example = "STOCK_IN", nullable = false)
