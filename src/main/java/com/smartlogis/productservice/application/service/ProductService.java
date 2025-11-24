@@ -18,6 +18,10 @@ import com.smartlogis.productservice.domain.exception.ProductCode;
 import com.smartlogis.productservice.domain.exception.ProductNotFoundException;
 import com.smartlogis.productservice.domain.repository.ProductRepository;
 import com.smartlogis.productservice.domain.repository.StockHistoryRepository;
+import com.smartlogis.productservice.infrastructure.event.publisher.ProductEventPublisher;
+import com.smartlogis.productservice.interfaces.dto.event.HubOrderCreatedEvent;
+import com.smartlogis.productservice.interfaces.dto.event.OrderCanceledEvent;
+import com.smartlogis.productservice.interfaces.dto.event.OrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.request.CreateProductRequest;
 import com.smartlogis.productservice.interfaces.dto.request.InventoryCheckRequest;
 import com.smartlogis.productservice.interfaces.dto.request.ProductSearchCondition;
@@ -36,6 +40,7 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final StockHistoryRepository stockHistoryRepository;
+	private final ProductEventPublisher productEventPublisher;
 
 	//1. 상품 생성
 	@Transactional
@@ -159,4 +164,86 @@ public class ProductService {
 
 		return new InventoryCheckResponse(results);
 	}
+
+	//8. 주문 생성 이벤트 처리
+	@Transactional
+	public void applyOrderStock(OrderCreatedEvent event){
+
+		//주문 아이템 하나씩 순회하면서
+		event.getOrderItems().forEach(item -> {
+
+			UUID productId = item.getProductId();
+			int quantity = item.getQuantity();
+
+			//상품 아이디로 상품 조회
+			Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException(ProductCode.PRODUCT_NOT_FOUND));
+
+			//재고 처리
+			StockHistory stockHistory = product.recordStockChange(
+				ChangeType.STOCK_OUT,
+				quantity,
+				ChangeSource.ORDER_SERVICE
+			);
+
+			//기록 저장
+			stockHistoryRepository.save(stockHistory);
+		});
+	}
+
+	//9. 주문 취소 이벤트 처리
+	@Transactional
+	public void revertOrderStock(OrderCanceledEvent event){
+
+		event.getOrderItems().forEach(item -> {
+
+			UUID productId = item.getProductId();
+			int quantity = item.getQuantity();
+
+			//상품 아이디로 상품 조회
+			Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException(ProductCode.PRODUCT_NOT_FOUND));
+
+			StockHistory stockHistory = product.recordStockChange(
+				ChangeType.RETURNED,
+				quantity,
+				ChangeSource.ORDER_SERVICE
+			);
+
+			stockHistoryRepository.save(stockHistory);
+		});
+	}
+
+	//10. 주문 생성 이벤트에 hub id 추가하기
+	@Transactional
+	public void handleOrderCreatedEvent(OrderCreatedEvent event){
+
+		//상품별 허브 id 포함하는 이벤트
+		List<HubOrderCreatedEvent.HubOrderItemDetail> items = event.getOrderItems().stream()
+			.map(item -> {
+				Product product = productRepository.findById(item.getProductId())
+					.orElseThrow(() -> new ProductNotFoundException(ProductCode.PRODUCT_NOT_FOUND));
+
+				return HubOrderCreatedEvent.HubOrderItemDetail.builder()
+					.productId(item.getProductId())
+					.quantity(item.getQuantity())
+					.hubId(product.getHubId())
+					.build();
+			})
+			.toList();
+
+		HubOrderCreatedEvent hubEvent = HubOrderCreatedEvent.builder()
+			.orderId(event.getOrderId())
+			.receiptCompanyId(event.getReceiptCompanyId())
+			.orderItems(items)
+			.requestDetails(event.getRequestDetails())
+			.address(event.getAddress())
+			.receiptUserId(event.getReceiptUserId())
+			.createdAt(event.getCreatedAt())
+			.createdBy(event.getCreatedBy())
+			.build();
+
+		productEventPublisher.publishHubOrderCreated(hubEvent);
+	}
+
 }
