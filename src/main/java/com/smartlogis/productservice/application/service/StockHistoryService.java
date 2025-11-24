@@ -28,7 +28,7 @@ public class StockHistoryService {
 	public PageResponse<StockHistoryListResponse> getStockHistory(
 		UUID productId, Pageable pageable
 	) {
-		Page<StockHistory> histories = stockHistoryRepository.findByProductId(productId, pageable);
+		Page<StockHistory> histories = stockHistoryRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable);
 
 		return PageResponse.from(
 			histories.map(StockHistoryListResponse::of)
