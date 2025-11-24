@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.smartlogis.common.domain.AbstractEntity;
 import com.smartlogis.productservice.domain.exception.InsufficientStockException;
 import com.smartlogis.productservice.domain.exception.InvalidChangeTypeException;
@@ -14,7 +13,9 @@ import com.smartlogis.productservice.domain.exception.InvalidManagerIdException;
 import com.smartlogis.productservice.domain.exception.InvalidNameException;
 import com.smartlogis.productservice.domain.exception.InvalidQuantityException;
 import com.smartlogis.productservice.domain.exception.InvalidStatusException;
+import com.smartlogis.productservice.domain.exception.InvalidStockException;
 import com.smartlogis.productservice.domain.exception.ProductCode;
+import com.smartlogis.productservice.interfaces.dto.request.CreateProductRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -148,6 +149,14 @@ public class Product extends AbstractEntity {
 		this.status = ProductStatus.INACTIVE;
 	}
 
+	//재고 변경 - 관리자
+	public void changeStock(Integer newStock){
+		if(newStock == null || newStock < 0){
+			throw new InvalidStockException(ProductCode.INVALID_STOCK);
+		}
+		this.stock = newStock;
+	}
+
 	// 상품 삭제 시 비활성화
 	@Override
 	public void delete(){
@@ -230,6 +239,16 @@ public class Product extends AbstractEntity {
 			.status(ProductStatus.ACTIVE)
 			.managerId(managerId)
 			.build();
+	}
+
+	public static Product create(CreateProductRequest request){
+		return create(
+			request.getName(),
+			request.getCompanyId(),
+			request.getHubId(),
+			request.getStock(),
+			request.getManagerId()
+		);
 	}
 
 }
