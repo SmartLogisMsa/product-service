@@ -31,6 +31,6 @@ public class ProductOrderCreatedEvent {
 	public static class ProductOrderItemDetail {
 		private UUID productId;
 		private Integer quantity;
-		private UUID hubId;
+		private UUID departureHubId;
 	}
 }

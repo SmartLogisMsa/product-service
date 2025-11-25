@@ -227,7 +227,7 @@ public class ProductService {
 				return ProductOrderCreatedEvent.ProductOrderItemDetail.builder()
 					.productId(item.getProductId())
 					.quantity(item.getQuantity())
-					.hubId(product.getHubId())
+					.departureHubId(product.getHubId())
 					.build();
 			})
 			.toList();
