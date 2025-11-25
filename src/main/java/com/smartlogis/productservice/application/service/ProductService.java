@@ -1,6 +1,7 @@
 package com.smartlogis.productservice.application.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -19,9 +20,9 @@ import com.smartlogis.productservice.domain.exception.ProductNotFoundException;
 import com.smartlogis.productservice.domain.repository.ProductRepository;
 import com.smartlogis.productservice.domain.repository.StockHistoryRepository;
 import com.smartlogis.productservice.infrastructure.event.publisher.ProductEventPublisher;
+import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.ProductOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.OrderCanceledEvent;
-import com.smartlogis.productservice.interfaces.dto.event.OrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.request.CreateProductRequest;
 import com.smartlogis.productservice.interfaces.dto.request.InventoryCheckRequest;
 import com.smartlogis.productservice.interfaces.dto.request.ProductSearchCondition;
@@ -33,9 +34,11 @@ import com.smartlogis.productservice.interfaces.dto.response.ProductListResponse
 import com.smartlogis.productservice.interfaces.dto.response.ProductResponse;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
 	private final ProductRepository productRepository;
@@ -167,7 +170,7 @@ public class ProductService {
 
 	//8. 주문 생성 이벤트 처리
 	@Transactional
-	public void applyOrderStock(OrderCreatedEvent event){
+	public void applyOrderStock(CompanyOrderCreatedEvent event){
 
 		//주문 아이템 하나씩 순회하면서
 		event.getOrderItems().forEach(item -> {
@@ -216,34 +219,33 @@ public class ProductService {
 
 	//10. 주문 생성 이벤트에 hub id 추가하기
 	@Transactional
-	public void handleOrderCreatedEvent(OrderCreatedEvent event){
+	public void handleOrderCreatedEvent(CompanyOrderCreatedEvent event){
 
-		//상품별 허브 id 포함하는 이벤트
-		List<ProductOrderCreatedEvent.ProductOrderItemDetail> items = event.getOrderItems().stream()
-			.map(item -> {
-				Product product = productRepository.findById(item.getProductId())
-					.orElseThrow(() -> new ProductNotFoundException(ProductCode.PRODUCT_NOT_FOUND));
+		for(CompanyOrderCreatedEvent.OrderItemDetail item : event.getOrderItems()) {
+			UUID productId = item.getProductId();
 
-				return ProductOrderCreatedEvent.ProductOrderItemDetail.builder()
-					.productId(item.getProductId())
-					.quantity(item.getQuantity())
-					.departureHubId(product.getHubId())
-					.build();
-			})
-			.toList();
+			//상품 아이디로 상품 조회
+			Optional<Product> productOpt = productRepository.findById(productId);
 
-		ProductOrderCreatedEvent productEvent = ProductOrderCreatedEvent.builder()
-			.orderId(event.getOrderId())
-			.receiptCompanyId(event.getReceiptCompanyId())
-			.orderItems(items)
-			.requestDetails(event.getRequestDetails())
-			.address(event.getAddress())
-			.receiptUserId(event.getReceiptUserId())
-			.createdAt(event.getCreatedAt())
-			.createdBy(event.getCreatedBy())
-			.build();
+			if(productOpt.isEmpty()){
+				log.warn("상품 없음: {}", productId);
+				continue;
+			}
+			Product product = productOpt.get();
 
-		productEventPublisher.publishProductOrderCreated(productEvent);
+			//출발 허브 id 포함시키기
+			UUID departureHubId = product.getHubId();
+
+			ProductOrderCreatedEvent productEvent = ProductOrderCreatedEvent.builder()
+				.orderId(event.getOrderId())
+				.productId(productId)
+				.departureHubId(departureHubId)
+				.destinationHubId(event.getDestinationHubId())
+				.address(event.getAddress())
+				.receiptUserId(event.getReceiptUserId())
+				.build();
+
+			productEventPublisher.publishToHub(productEvent);
+		}
 	}
-
 }

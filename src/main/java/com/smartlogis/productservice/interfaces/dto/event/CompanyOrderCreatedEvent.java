@@ -1,6 +1,5 @@
 package com.smartlogis.productservice.interfaces.dto.event;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,16 +12,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderCreatedEvent {
+public class CompanyOrderCreatedEvent {
 
 	private UUID orderId;
-	private UUID receiptCompanyId;
 	private List<OrderItemDetail> orderItems;
-	private String requestDetails;
 	private String address;
 	private UUID receiptUserId;
-	private LocalDateTime createdAt;
-	private String createdBy;
+	private UUID destinationHubId; //도착 허브 id
 
 	@Data
 	@NoArgsConstructor

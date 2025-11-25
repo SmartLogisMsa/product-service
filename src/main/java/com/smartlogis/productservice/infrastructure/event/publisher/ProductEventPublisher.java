@@ -15,7 +15,7 @@ public class ProductEventPublisher {
 
 	private final RabbitTemplate rabbitTemplate;
 
-	public void publishProductOrderCreated(ProductOrderCreatedEvent event) {
+	public void publishToHub(ProductOrderCreatedEvent event) {
 		rabbitTemplate.convertAndSend(
 			PRODUCT_ORDER_CREATED_EXCHANGE,
 			PRODUCT_ORDER_CREATED_ROUTING_KEY,

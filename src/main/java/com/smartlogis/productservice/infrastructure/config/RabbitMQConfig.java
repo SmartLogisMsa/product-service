@@ -12,30 +12,31 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-	//주문 생성
-	public static final String ORDER_CREATED_QUEUE = "smartlogis.order.created.queue";
-	public static final String ORDER_CREATED_EXCHANGE = "smartlogis.order.exchange";
-	public static final String ORDER_CREATED_ROUTING_KEY = "smartlogis.order.created";
+	//업체 이벤트 받기
+	public static final String COMPANY_ORDER_CREATED_QUEUE = "smartlogis.company.order.created.queue";
+	public static final String COMPANY_ORDER_CREATED_EXCHANGE = "smartlogis.company.exchange";
+	public static final String COMPANY_ORDER_CREATED_ROUTING_KEY = "smartlogis.company.order.created";
 
 	//주문 취소
 	public static final String ORDER_CANCELED_QUEUE = "smartlogis.order.canceled.queue";
 	public static final String ORDER_CANCELED_EXCHANGE = "smartlogis.order.exchange";
 	public static final String ORDER_CANCELED_ROUTING_KEY = "smartlogis.order.canceled";
 
-	//업체로 가는 이벤트(소속 허브 id포함)
+	//허브로 가는 이벤트
 	public static final String PRODUCT_ORDER_CREATED_QUEUE = "smartlogis.product.order.created.queue";
 	public static final String PRODUCT_ORDER_CREATED_EXCHANGE = "smartlogis.product.exchange";
 	public static final String PRODUCT_ORDER_CREATED_ROUTING_KEY = "smartlogis.product.order.created";
 
 
-	@Bean
-	public Queue orderCreatedQueue() {
-		return new Queue(ORDER_CREATED_QUEUE, true);
-	}
 
 	@Bean
 	public Queue orderCanceledQueue() {
 		return new Queue(ORDER_CANCELED_QUEUE, true);
+	}
+
+	@Bean
+	public Queue companyOrderCreatedQueue() {
+		return new Queue(COMPANY_ORDER_CREATED_QUEUE, true);
 	}
 
 	@Bean
@@ -45,7 +46,12 @@ public class RabbitMQConfig {
 
 	@Bean
 	public TopicExchange orderExchange() {
-		return new TopicExchange(ORDER_CREATED_EXCHANGE, true,  false);
+		return new TopicExchange(ORDER_CANCELED_EXCHANGE, true,  false);
+	}
+
+	@Bean
+	public TopicExchange companyExchange() {
+		return new TopicExchange(COMPANY_ORDER_CREATED_EXCHANGE, true, false);
 	}
 
 	@Bean
@@ -54,17 +60,17 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	public Binding orderCreatedBinding(Queue orderCreatedQueue, TopicExchange orderExchange) {
-		return BindingBuilder.bind(orderCreatedQueue)
-			.to(orderExchange)
-			.with(ORDER_CREATED_ROUTING_KEY);
-	}
-
-	@Bean
 	public Binding orderCanceledBinding(Queue orderCanceledQueue, TopicExchange orderExchange) {
 		return BindingBuilder.bind(orderCanceledQueue)
 			.to(orderExchange)
 			.with(ORDER_CANCELED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyOrderCreatedBinding(Queue companyOrderCreatedQueue, TopicExchange companyExchange) {
+		return BindingBuilder.bind(companyOrderCreatedQueue)
+			.to(companyExchange)
+			.with(COMPANY_ORDER_CREATED_ROUTING_KEY);
 	}
 
 	@Bean
