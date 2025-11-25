@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HubOrderCreatedEvent {
+public class ProductOrderCreatedEvent {
 
 	private UUID orderId;
 	private UUID receiptCompanyId;
-	private List<HubOrderItemDetail> orderItems;
+	private List<ProductOrderItemDetail> orderItems;
 	private String requestDetails;
 	private String address;
 	private UUID receiptUserId;
@@ -28,7 +28,7 @@ public class HubOrderCreatedEvent {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
-	public static class HubOrderItemDetail {
+	public static class ProductOrderItemDetail {
 		private UUID productId;
 		private Integer quantity;
 		private UUID hubId;

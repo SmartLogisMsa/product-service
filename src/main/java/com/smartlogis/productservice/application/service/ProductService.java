@@ -19,7 +19,7 @@ import com.smartlogis.productservice.domain.exception.ProductNotFoundException;
 import com.smartlogis.productservice.domain.repository.ProductRepository;
 import com.smartlogis.productservice.domain.repository.StockHistoryRepository;
 import com.smartlogis.productservice.infrastructure.event.publisher.ProductEventPublisher;
-import com.smartlogis.productservice.interfaces.dto.event.HubOrderCreatedEvent;
+import com.smartlogis.productservice.interfaces.dto.event.ProductOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.OrderCanceledEvent;
 import com.smartlogis.productservice.interfaces.dto.event.OrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.request.CreateProductRequest;
@@ -219,12 +219,12 @@ public class ProductService {
 	public void handleOrderCreatedEvent(OrderCreatedEvent event){
 
 		//상품별 허브 id 포함하는 이벤트
-		List<HubOrderCreatedEvent.HubOrderItemDetail> items = event.getOrderItems().stream()
+		List<ProductOrderCreatedEvent.ProductOrderItemDetail> items = event.getOrderItems().stream()
 			.map(item -> {
 				Product product = productRepository.findById(item.getProductId())
 					.orElseThrow(() -> new ProductNotFoundException(ProductCode.PRODUCT_NOT_FOUND));
 
-				return HubOrderCreatedEvent.HubOrderItemDetail.builder()
+				return ProductOrderCreatedEvent.ProductOrderItemDetail.builder()
 					.productId(item.getProductId())
 					.quantity(item.getQuantity())
 					.hubId(product.getHubId())
@@ -232,7 +232,7 @@ public class ProductService {
 			})
 			.toList();
 
-		HubOrderCreatedEvent hubEvent = HubOrderCreatedEvent.builder()
+		ProductOrderCreatedEvent productEvent = ProductOrderCreatedEvent.builder()
 			.orderId(event.getOrderId())
 			.receiptCompanyId(event.getReceiptCompanyId())
 			.orderItems(items)
@@ -243,7 +243,7 @@ public class ProductService {
 			.createdBy(event.getCreatedBy())
 			.build();
 
-		productEventPublisher.publishHubOrderCreated(hubEvent);
+		productEventPublisher.publishProductOrderCreated(productEvent);
 	}
 
 }

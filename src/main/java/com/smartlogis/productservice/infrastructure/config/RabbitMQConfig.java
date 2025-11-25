@@ -22,10 +22,10 @@ public class RabbitMQConfig {
 	public static final String ORDER_CANCELED_EXCHANGE = "smartlogis.order.exchange";
 	public static final String ORDER_CANCELED_ROUTING_KEY = "smartlogis.order.canceled";
 
-	//상품별 허브 이벤트
-	public static final String HUB_ORDER_CREATED_QUEUE = "smartlogis.hub.order.created.queue";
-	public static final String HUB_ORDER_CREATED_EXCHANGE = "smartlogis.hub.exchange";
-	public static final String HUB_ORDER_CREATED_ROUTING_KEY = "smartlogis.hub.order.created";
+	//업체로 가는 이벤트(소속 허브 id포함)
+	public static final String PRODUCT_ORDER_CREATED_QUEUE = "smartlogis.product.order.created.queue";
+	public static final String PRODUCT_ORDER_CREATED_EXCHANGE = "smartlogis.product.exchange";
+	public static final String PRODUCT_ORDER_CREATED_ROUTING_KEY = "smartlogis.product.order.created";
 
 
 	@Bean
@@ -39,8 +39,8 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	public Queue hubOrderCreatedQueue() {
-		return new Queue(HUB_ORDER_CREATED_QUEUE, true);
+	public Queue productOrderCreatedQueue() {
+		return new Queue(PRODUCT_ORDER_CREATED_QUEUE, true);
 	}
 
 	@Bean
@@ -49,8 +49,8 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	public TopicExchange hubExchange() {
-		return new TopicExchange(HUB_ORDER_CREATED_EXCHANGE, true, false);
+	public TopicExchange productExchange() {
+		return new TopicExchange(PRODUCT_ORDER_CREATED_EXCHANGE, true, false);
 	}
 
 	@Bean
@@ -68,10 +68,10 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	public Binding hubOrderCreatedBinding(Queue hubOrderCreatedQueue, TopicExchange hubExchange) {
-		return BindingBuilder.bind(hubOrderCreatedQueue)
-			.to(hubExchange)
-			.with(HUB_ORDER_CREATED_ROUTING_KEY);
+	public Binding productOrderCreatedBinding(Queue productOrderCreatedQueue, TopicExchange productExchange) {
+		return BindingBuilder.bind(productOrderCreatedQueue)
+			.to(productExchange)
+			.with(PRODUCT_ORDER_CREATED_ROUTING_KEY);
 	}
 
 	@Bean
