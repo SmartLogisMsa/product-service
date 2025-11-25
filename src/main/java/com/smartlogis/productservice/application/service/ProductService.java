@@ -20,6 +20,7 @@ import com.smartlogis.productservice.domain.exception.ProductNotFoundException;
 import com.smartlogis.productservice.domain.repository.ProductRepository;
 import com.smartlogis.productservice.domain.repository.StockHistoryRepository;
 import com.smartlogis.productservice.infrastructure.event.publisher.ProductEventPublisher;
+import com.smartlogis.productservice.interfaces.dto.event.CompanyInactivatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.ProductOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.OrderCanceledEvent;
@@ -247,5 +248,15 @@ public class ProductService {
 
 			productEventPublisher.publishToHub(productEvent);
 		}
+	}
+
+	//11. 업체 비활성화 이벤트 처리
+	@Transactional
+	public void handleCompanyInactivated(CompanyInactivatedEvent event){
+		UUID companyId = event.companyId();
+
+		List<Product> products = productRepository.findByCompanyId(companyId);
+
+		products.forEach(Product::inactivate);
 	}
 }

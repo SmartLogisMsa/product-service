@@ -27,6 +27,10 @@ public class RabbitMQConfig {
 	public static final String PRODUCT_ORDER_CREATED_EXCHANGE = "smartlogis.product.exchange";
 	public static final String PRODUCT_ORDER_CREATED_ROUTING_KEY = "smartlogis.product.order.created";
 
+	//업체 비활성화 이벤트
+	public static final String COMPANY_INACTIVED_QUEUE = "smartlogis.company.inactive.queue";
+	public static final String COMPANY_INACTIVATED_EXCHANGE = "smartlogis.company.inactivated.exchange";
+	public static final String COMPANY_INACTIVATED_ROUTING_KEY = "smartlogis.company.inactivated";
 
 
 	@Bean
@@ -45,6 +49,9 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
+	public Queue companyInactiveQueue() {return new Queue(COMPANY_INACTIVED_QUEUE, true);}
+
+	@Bean
 	public TopicExchange orderExchange() {
 		return new TopicExchange(ORDER_CANCELED_EXCHANGE, true,  false);
 	}
@@ -57,6 +64,11 @@ public class RabbitMQConfig {
 	@Bean
 	public TopicExchange productExchange() {
 		return new TopicExchange(PRODUCT_ORDER_CREATED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange companyInactivatedExchange() {
+		return new TopicExchange(COMPANY_INACTIVATED_EXCHANGE, true, false);
 	}
 
 	@Bean
@@ -78,6 +90,13 @@ public class RabbitMQConfig {
 		return BindingBuilder.bind(productOrderCreatedQueue)
 			.to(productExchange)
 			.with(PRODUCT_ORDER_CREATED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyInactiveBinding(Queue companyInactiveQueue, TopicExchange companyInactivatedExchange) {
+		return BindingBuilder.bind(companyInactiveQueue)
+			.to(companyInactivatedExchange)
+			.with(COMPANY_INACTIVATED_ROUTING_KEY);
 	}
 
 	@Bean
