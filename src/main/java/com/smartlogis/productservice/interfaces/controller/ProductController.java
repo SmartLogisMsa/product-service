@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -44,6 +45,7 @@ public class ProductController {
 	//1. 상품 생성
 	@PostMapping("")
 	@Operation(summary = "새 상품 생성", description = "새로운 상품을 생성합니다.")
+	@PreAuthorize("hasRole('MASTER') or hasRole('HUB_MANAGER') or hasRole('COMPANY_MANAGER')")
 	public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
 		@RequestBody @Valid CreateProductRequest request
 	){
@@ -54,6 +56,7 @@ public class ProductController {
 	//2. 상품 수정
 	@PutMapping("/{id}")
 	@Operation(summary = "상품 수정", description = "상품명 또는 상태를 수정합니다.")
+	@PreAuthorize("hasRole('MASTER') or hasRole('HUB_MANAGER') or hasRole('COMPANY_MANAGER')")
 	public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
 		@PathVariable UUID id,
 		@RequestBody @Valid UpdateProductRequest request
@@ -65,6 +68,7 @@ public class ProductController {
 	//3. 관리자의 상품 재고 수정
 	@PatchMapping("/{id}/stock")
 	@Operation(summary = "상품 재고 수정", description = "관리자에 의한 상품 재고 수정입니다.")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<ApiResponse<ProductResponse>> updateStock(
 		@PathVariable UUID id,
 		@RequestBody @Valid UpdateStockRequest request
@@ -76,6 +80,7 @@ public class ProductController {
 	//4. 상품 삭제
 	@DeleteMapping("/{id}")
 	@Operation(summary = "상품 삭제", description = "하나의 상품을 삭제합니다.")
+	@PreAuthorize("hasRole('MASTER') or hasRole('HUB_MANAGER')")
 	public ResponseEntity<ApiResponse<Void>> deleteProduct(
 		@PathVariable UUID id
 	){
