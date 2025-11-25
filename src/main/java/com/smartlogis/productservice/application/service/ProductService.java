@@ -252,11 +252,15 @@ public class ProductService {
 
 	//11. 업체 비활성화 이벤트 처리
 	@Transactional
-	public void handleCompanyInactivated(CompanyInactivatedEvent event){
-		UUID companyId = event.companyId();
-
+	public void handleCompanyInactivated(UUID companyId) {
 		List<Product> products = productRepository.findByCompanyId(companyId);
 
 		products.forEach(Product::inactivate);
+	}
+
+	@Transactional
+	public void activateProductsByCompany(UUID companyId) {
+		List<Product> products = productRepository.findByCompanyId(companyId);
+		products.forEach(Product::activate);
 	}
 }

@@ -32,6 +32,11 @@ public class RabbitMQConfig {
 	public static final String COMPANY_INACTIVATED_EXCHANGE = "smartlogis.company.inactivated.exchange";
 	public static final String COMPANY_INACTIVATED_ROUTING_KEY = "smartlogis.company.inactivated";
 
+	//업체 상태 변경 이벤트
+	public static final String COMPANY_STATUS_QUEUE = "smartlogis.company.status.queue";
+	public static final String COMPANY_STATUS_CHANGED_EXCHANGE = "smartlogis.company.status.changed.exchange";
+	public static final String COMPANY_STATUS_CHANGED_ROUTING_KEY = "smartlogis.company.status.changed";
+
 
 	@Bean
 	public Queue orderCanceledQueue() {
@@ -52,6 +57,9 @@ public class RabbitMQConfig {
 	public Queue companyInactiveQueue() {return new Queue(COMPANY_INACTIVED_QUEUE, true);}
 
 	@Bean
+	public Queue companyStatusChangedQueue() {return new Queue(COMPANY_STATUS_QUEUE, true);}
+
+	@Bean
 	public TopicExchange orderExchange() {
 		return new TopicExchange(ORDER_CANCELED_EXCHANGE, true,  false);
 	}
@@ -69,6 +77,11 @@ public class RabbitMQConfig {
 	@Bean
 	public TopicExchange companyInactivatedExchange() {
 		return new TopicExchange(COMPANY_INACTIVATED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange companyStatusChangedExchange() {
+		return new TopicExchange(COMPANY_STATUS_CHANGED_EXCHANGE, true, false);
 	}
 
 	@Bean
@@ -97,6 +110,13 @@ public class RabbitMQConfig {
 		return BindingBuilder.bind(companyInactiveQueue)
 			.to(companyInactivatedExchange)
 			.with(COMPANY_INACTIVATED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyStatusChangedBinding(Queue companyStatusChangedQueue, TopicExchange companyExchange) {
+		return BindingBuilder.bind(companyStatusChangedQueue)
+			.to(companyExchange)
+			.with(COMPANY_STATUS_CHANGED_ROUTING_KEY);
 	}
 
 	@Bean

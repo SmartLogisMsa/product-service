@@ -7,6 +7,7 @@ import com.smartlogis.productservice.application.service.ProductService;
 import com.smartlogis.productservice.infrastructure.config.RabbitMQConfig;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyInactivatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEvent;
+import com.smartlogis.productservice.interfaces.dto.event.CompanyStatusChangedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,19 @@ public class CompanyEventListener {
 	public void handleInactiveCompany(CompanyInactivatedEvent event){
 		log.info("업체 비활성화 이벤트 받음");
 
-		productService.handleCompanyInactivated(event);
+		productService.handleCompanyInactivated(event.companyId());
 
 		log.info("비활성화된 업체의 상품 비활성화 성공");
+	}
+
+	@RabbitListener(queues = RabbitMQConfig.COMPANY_STATUS_QUEUE)
+	public void handleCompanyStatus(CompanyStatusChangedEvent event){
+		log.info("업체 상태 변경 이벤트 받음");
+
+		if (event.status().equals("INACTIVE")) {
+			productService.handleCompanyInactivated(event.companyId());
+		} else if (event.status().equals("ACTIVE")) {
+			productService.activateProductsByCompany(event.companyId());
+		}
 	}
 }
