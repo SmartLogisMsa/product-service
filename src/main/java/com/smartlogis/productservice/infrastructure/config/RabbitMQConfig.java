@@ -37,6 +37,11 @@ public class RabbitMQConfig {
 	public static final String COMPANY_STATUS_CHANGED_EXCHANGE = "smartlogis.company.status.changed.exchange";
 	public static final String COMPANY_STATUS_CHANGED_ROUTING_KEY = "smartlogis.company.status.changed";
 
+	//업체 허브 변경 이벤트
+	public static final String COMPANY_HUB_CHANGED_QUEUE = "smartlogis.company.hubId.changed.queue";
+	public static final String COMPANY_HUB_CHANGED_EXCHANGE = "smartlogis.company.hubId.changed.exchange";
+	public static final String COMPANY_HUB_CHANGED_ROUTING_KEY = "smartlogis.company.hubId.changed";
+
 
 	@Bean
 	public Queue orderCanceledQueue() {
@@ -58,6 +63,11 @@ public class RabbitMQConfig {
 
 	@Bean
 	public Queue companyStatusChangedQueue() {return new Queue(COMPANY_STATUS_QUEUE, true);}
+
+	@Bean
+	public Queue companyHubChangedQueue() {
+		return new Queue(COMPANY_HUB_CHANGED_QUEUE, true);
+	}
 
 	@Bean
 	public TopicExchange orderExchange() {
@@ -82,6 +92,11 @@ public class RabbitMQConfig {
 	@Bean
 	public TopicExchange companyStatusChangedExchange() {
 		return new TopicExchange(COMPANY_STATUS_CHANGED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange companyHubChangedExchange() {
+		return new TopicExchange(COMPANY_HUB_CHANGED_EXCHANGE, true, false);
 	}
 
 	@Bean
@@ -117,6 +132,13 @@ public class RabbitMQConfig {
 		return BindingBuilder.bind(companyStatusChangedQueue)
 			.to(companyExchange)
 			.with(COMPANY_STATUS_CHANGED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyHubChangedBinding(Queue companyHubChangedQueue, TopicExchange companyHubChangedExchange) {
+		return BindingBuilder.bind(companyHubChangedExchange)
+			.to(companyHubChangedExchange)
+			.with(COMPANY_HUB_CHANGED_ROUTING_KEY);
 	}
 
 	@Bean

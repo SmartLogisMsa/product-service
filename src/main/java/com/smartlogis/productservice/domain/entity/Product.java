@@ -120,6 +120,11 @@ public class Product extends AbstractEntity {
 		this.name = newName;
 	}
 
+	public void changeHubId(UUID newHubId){
+		validateHubId(newHubId);
+		this.hubId = newHubId;
+	}
+
 	// 상품 상태 변경
 	public void changeStatus(ProductStatus newStatus){
 		if(newStatus == null){

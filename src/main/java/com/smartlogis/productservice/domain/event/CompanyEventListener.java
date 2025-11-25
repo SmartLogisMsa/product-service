@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.smartlogis.productservice.application.service.ProductService;
 import com.smartlogis.productservice.infrastructure.config.RabbitMQConfig;
+import com.smartlogis.productservice.interfaces.dto.event.CompanyHubChangeEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyInactivatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyStatusChangedEvent;
@@ -50,5 +51,12 @@ public class CompanyEventListener {
 		} else if (event.status().equals("ACTIVE")) {
 			productService.activateProductsByCompany(event.companyId());
 		}
+	}
+
+	@RabbitListener(queues = RabbitMQConfig.COMPANY_HUB_CHANGED_QUEUE)
+	public void handleHubChanged(CompanyHubChangeEvent event){
+		log.info("업체의 소속 허브 변경 이벤트 받음");
+
+		productService.updateProductsHubId(event.companyId(), event.newHubId());
 	}
 }

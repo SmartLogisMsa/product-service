@@ -258,9 +258,17 @@ public class ProductService {
 		products.forEach(Product::inactivate);
 	}
 
+	//12. 업체 활성화 이벤트 처리
 	@Transactional
 	public void activateProductsByCompany(UUID companyId) {
 		List<Product> products = productRepository.findByCompanyId(companyId);
 		products.forEach(Product::activate);
+	}
+
+	//13. 업체의 허브 변경 이벤트 처리
+	@Transactional
+	public void updateProductsHubId(UUID id, UUID hubId) {
+		List<Product> products = productRepository.findByCompanyId(id);
+		products.forEach(p -> p.changeHubId(hubId));
 	}
 }
