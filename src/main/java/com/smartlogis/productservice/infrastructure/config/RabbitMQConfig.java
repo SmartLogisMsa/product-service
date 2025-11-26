@@ -80,7 +80,7 @@ public class RabbitMQConfig {
 
 	@Bean
 	public Queue companyReplenishQueue() {
-		return new Queue(COMPANY_REPLENISH_STOCK_EXCHANGE, true);
+		return new Queue(COMPANY_REPLENISH_STOCK_QUEUE, true);
 	}
 
 	@Bean
