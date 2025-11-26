@@ -23,15 +23,13 @@ public class CompanyEventListener {
 
 	@RabbitListener(queues = RabbitMQConfig.COMPANY_ORDER_CREATED_QUEUE)
 	public void handleOrderCreated(CompanyOrderCreatedEvent event){
-		log.info("[주문 생성] 이벤트 받음 {}", event);
+		log.info("업체에서 온 주문 생성 이벤트 받음 {}", event);
 
 		//재고 관리
 		productService.applyOrderStock(event);
 
 		//출발 허브 id 추가 후 이벤트 발행
 		productService.handleOrderCreatedEvent(event);
-
-		log.info("허브로 이벤트 발행 성공");
 	}
 
 	@RabbitListener(queues = RabbitMQConfig.COMPANY_INACTIVED_QUEUE)
@@ -39,8 +37,6 @@ public class CompanyEventListener {
 		log.info("업체 비활성화 이벤트 받음");
 
 		productService.handleCompanyInactivated(event.companyId());
-
-		log.info("비활성화된 업체의 상품 비활성화 성공");
 	}
 
 	@RabbitListener(queues = RabbitMQConfig.COMPANY_STATUS_QUEUE)
@@ -59,6 +55,8 @@ public class CompanyEventListener {
 		log.info("업체의 소속 허브 변경 이벤트 받음");
 
 		productService.updateProductsHubId(event.companyId(), event.newHubId());
+
+		log.info("상품 소속 허브 변경 성공");
 	}
 
 	@RabbitListener(queues = RabbitMQConfig.COMPANY_REPLENISH_STOCK_QUEUE)

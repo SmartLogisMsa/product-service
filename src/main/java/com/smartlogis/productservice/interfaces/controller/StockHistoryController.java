@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/v1/products")
 @RequiredArgsConstructor
 @Tag(name = "재고 내역", description = "재고 내역 관련 API")
 public class StockHistoryController {
