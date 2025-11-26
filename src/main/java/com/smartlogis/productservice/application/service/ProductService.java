@@ -25,6 +25,7 @@ import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEve
 import com.smartlogis.productservice.interfaces.dto.event.LowStockEvent;
 import com.smartlogis.productservice.interfaces.dto.event.ProductOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.OrderCanceledEvent;
+import com.smartlogis.productservice.interfaces.dto.event.StockReplenishedEvent;
 import com.smartlogis.productservice.interfaces.dto.request.CreateProductRequest;
 import com.smartlogis.productservice.interfaces.dto.request.InventoryCheckRequest;
 import com.smartlogis.productservice.interfaces.dto.request.ProductSearchCondition;
@@ -291,5 +292,26 @@ public class ProductService {
 	public void updateProductsHubId(UUID id, UUID hubId) {
 		List<Product> products = productRepository.findByCompanyId(id);
 		products.forEach(p -> p.changeHubId(hubId));
+	}
+
+	//14. 재고 보충 이벤트 처리
+	@Transactional
+	public void replenishStock(StockReplenishedEvent event){
+		UUID productId = event.productId();
+		int replenishedQuantity = event.replenishedQuantity();
+
+		Product product = productRepository.findById(productId)
+			.orElseThrow(() -> new ProductNotFoundException(ProductCode.PRODUCT_NOT_FOUND));
+
+		StockHistory stockHistory = product.recordStockChange(
+			ChangeType.STOCK_IN,
+			replenishedQuantity,
+			ChangeSource.COMPANY_SERVICE
+		);
+
+		stockHistoryRepository.save(stockHistory);
+
+		log.info("상품 재고 보충 완료 productId={}, 추가수량={}, 현재재고={}",
+			productId, replenishedQuantity, product.getStock());
 	}
 }

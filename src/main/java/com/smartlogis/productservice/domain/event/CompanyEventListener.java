@@ -9,6 +9,7 @@ import com.smartlogis.productservice.interfaces.dto.event.CompanyHubChangeEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyInactivatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyStatusChangedEvent;
+import com.smartlogis.productservice.interfaces.dto.event.StockReplenishedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,5 +59,12 @@ public class CompanyEventListener {
 		log.info("업체의 소속 허브 변경 이벤트 받음");
 
 		productService.updateProductsHubId(event.companyId(), event.newHubId());
+	}
+
+	@RabbitListener(queues = RabbitMQConfig.COMPANY_REPLENISH_STOCK_QUEUE)
+	public void handleReplenishStock(StockReplenishedEvent event){
+		log.info("업체의 재고 보충 이벤트 받음");
+
+		productService.replenishStock(event);
 	}
 }
