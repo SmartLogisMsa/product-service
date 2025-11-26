@@ -30,7 +30,9 @@ ext {
 }
 
 dependencies {
-    implementation 'com.github.smartlogismsa:common-module:v0.0.10'
+    implementation 'com.github.smartlogismsa:common-module:v0.0.11'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

@@ -1,5 +1,6 @@
 package com.smartlogis.productservice.domain.repository;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +11,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, Product
 
 	// 상품 중복 등록 여부 확인
 	boolean existsByNameAndCompanyId(String name, UUID companyId);
+
+	// 업체 id로 상품 찾기
+	List<Product> findByCompanyId(UUID companyId);
 }

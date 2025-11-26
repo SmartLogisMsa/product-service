@@ -9,12 +9,13 @@ spring:
   application:
     name: product-service
   config:
-    import: 'optional:configserver:'
+    import: 'optional:configserver:${CONFIG_SERVER_URL}'
   cloud:
     config:
       discovery:
         enabled: true
         service-id: config-server
+      uri: ${CONFIG_SERVER_URL}
   datasource:
     url: ${MYSQL_URL}
     username: ${MYSQL_USERNAME}
@@ -44,5 +45,24 @@ eureka:
     register-with-eureka: true #유레카 서버 이외에 다 붙여야 함
     fetch-registry: true #클라이언트 측에서 유레카에 의존하지 않고 로드밸런싱 할 수 있도록 설정 가져옴
     service-url:
-      defaultZone: http://${eureka.instance.hostname}:3150/eureka/
+      defaultZone: ${EUREKA_SERVER_URL}
 
+# OPEN DOC API 설정
+springdoc:
+  version: '1.0.0'
+  api-docs:
+    path: /v3/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+    path: /api-docs.html
+    disable-swagger-default-url: true
+    doc-expansion: full
+  paths-to-match:
+    - /**
+
+openapi:
+  service:
+    url: http://localhost:3000

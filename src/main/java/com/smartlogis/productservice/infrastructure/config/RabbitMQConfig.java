@@ -12,26 +12,45 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-	//주문 생성
-	public static final String ORDER_CREATED_QUEUE = "smartlogis.order.created.queue";
-	public static final String ORDER_CREATED_EXCHANGE = "smartlogis.order.exchange";
-	public static final String ORDER_CREATED_ROUTING_KEY = "smartlogis.order.created";
+	//업체 이벤트 받기
+	public static final String COMPANY_ORDER_CREATED_QUEUE = "smartlogis.company.order.created.queue";
+	public static final String COMPANY_ORDER_CREATED_EXCHANGE = "smartlogis.company.exchange";
+	public static final String COMPANY_ORDER_CREATED_ROUTING_KEY = "smartlogis.company.order.created";
 
 	//주문 취소
 	public static final String ORDER_CANCELED_QUEUE = "smartlogis.order.canceled.queue";
 	public static final String ORDER_CANCELED_EXCHANGE = "smartlogis.order.exchange";
 	public static final String ORDER_CANCELED_ROUTING_KEY = "smartlogis.order.canceled";
 
-	//상품별 허브 이벤트
-	public static final String HUB_ORDER_CREATED_QUEUE = "smartlogis.hub.order.created.queue";
-	public static final String HUB_ORDER_CREATED_EXCHANGE = "smartlogis.hub.exchange";
-	public static final String HUB_ORDER_CREATED_ROUTING_KEY = "smartlogis.hub.order.created";
+	//허브로 가는 이벤트
+	public static final String PRODUCT_ORDER_CREATED_QUEUE = "smartlogis.product.order.created.queue";
+	public static final String PRODUCT_ORDER_CREATED_EXCHANGE = "smartlogis.product.exchange";
+	public static final String PRODUCT_ORDER_CREATED_ROUTING_KEY = "smartlogis.product.order.created";
 
+	//업체 비활성화 이벤트
+	public static final String COMPANY_INACTIVED_QUEUE = "smartlogis.company.inactive.queue";
+	public static final String COMPANY_INACTIVATED_EXCHANGE = "smartlogis.company.inactivated.exchange";
+	public static final String COMPANY_INACTIVATED_ROUTING_KEY = "smartlogis.company.inactivated";
 
-	@Bean
-	public Queue orderCreatedQueue() {
-		return new Queue(ORDER_CREATED_QUEUE, true);
-	}
+	//업체 상태 변경 이벤트
+	public static final String COMPANY_STATUS_QUEUE = "smartlogis.company.status.queue";
+	public static final String COMPANY_STATUS_CHANGED_EXCHANGE = "smartlogis.company.status.changed.exchange";
+	public static final String COMPANY_STATUS_CHANGED_ROUTING_KEY = "smartlogis.company.status.changed";
+
+	//업체 허브 변경 이벤트
+	public static final String COMPANY_HUB_CHANGED_QUEUE = "smartlogis.company.hubId.changed.queue";
+	public static final String COMPANY_HUB_CHANGED_EXCHANGE = "smartlogis.company.hubId.changed.exchange";
+	public static final String COMPANY_HUB_CHANGED_ROUTING_KEY = "smartlogis.company.hubId.changed";
+
+	//재고 부족 이벤트
+	public static final String PRODUCT_LOW_STOCK_EXCHANGE = "smartlogis.product.low.stock.exchange";
+	public static final String PRODUCT_LOW_STOCK_ROUTING_KEY = "smartlogis.product.low.stock";
+
+	//업체에서 온 재고 보충 이벤트
+	public static final String COMPANY_REPLENISH_STOCK_QUEUE = "smartlogis.company.replenish.stock.queue";
+	public static final String COMPANY_REPLENISH_STOCK_EXCHANGE = "smartlogis.company.replenish.stock.exchange";
+	public static final String COMPANY_REPLENISH_STOCK_ROUTING_KEY = "smartlogis.company.replenish.stock";
+
 
 	@Bean
 	public Queue orderCanceledQueue() {
@@ -39,25 +58,68 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	public Queue hubOrderCreatedQueue() {
-		return new Queue(HUB_ORDER_CREATED_QUEUE, true);
+	public Queue companyOrderCreatedQueue() {
+		return new Queue(COMPANY_ORDER_CREATED_QUEUE, true);
+	}
+
+	@Bean
+	public Queue productOrderCreatedQueue() {
+		return new Queue(PRODUCT_ORDER_CREATED_QUEUE, true);
+	}
+
+	@Bean
+	public Queue companyInactiveQueue() {return new Queue(COMPANY_INACTIVED_QUEUE, true);}
+
+	@Bean
+	public Queue companyStatusChangedQueue() {return new Queue(COMPANY_STATUS_QUEUE, true);}
+
+	@Bean
+	public Queue companyHubChangedQueue() {
+		return new Queue(COMPANY_HUB_CHANGED_QUEUE, true);
+	}
+
+	@Bean
+	public Queue companyReplenishQueue() {
+		return new Queue(COMPANY_REPLENISH_STOCK_QUEUE, true);
 	}
 
 	@Bean
 	public TopicExchange orderExchange() {
-		return new TopicExchange(ORDER_CREATED_EXCHANGE, true,  false);
+		return new TopicExchange(ORDER_CANCELED_EXCHANGE, true,  false);
 	}
 
 	@Bean
-	public TopicExchange hubExchange() {
-		return new TopicExchange(HUB_ORDER_CREATED_EXCHANGE, true, false);
+	public TopicExchange companyExchange() {
+		return new TopicExchange(COMPANY_ORDER_CREATED_EXCHANGE, true, false);
 	}
 
 	@Bean
-	public Binding orderCreatedBinding(Queue orderCreatedQueue, TopicExchange orderExchange) {
-		return BindingBuilder.bind(orderCreatedQueue)
-			.to(orderExchange)
-			.with(ORDER_CREATED_ROUTING_KEY);
+	public TopicExchange productExchange() {
+		return new TopicExchange(PRODUCT_ORDER_CREATED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange companyInactivatedExchange() {
+		return new TopicExchange(COMPANY_INACTIVATED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange companyStatusChangedExchange() {
+		return new TopicExchange(COMPANY_STATUS_CHANGED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange companyHubChangedExchange() {
+		return new TopicExchange(COMPANY_HUB_CHANGED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange productLowStockExchange() {
+		return new TopicExchange(PRODUCT_LOW_STOCK_EXCHANGE, true, false);
+	}
+
+	@Bean TopicExchange companyReplenishExchange() {
+		return new TopicExchange(COMPANY_REPLENISH_STOCK_EXCHANGE, true, false);
 	}
 
 	@Bean
@@ -68,10 +130,45 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	public Binding hubOrderCreatedBinding(Queue hubOrderCreatedQueue, TopicExchange hubExchange) {
-		return BindingBuilder.bind(hubOrderCreatedQueue)
-			.to(hubExchange)
-			.with(HUB_ORDER_CREATED_ROUTING_KEY);
+	public Binding companyOrderCreatedBinding(Queue companyOrderCreatedQueue, TopicExchange companyExchange) {
+		return BindingBuilder.bind(companyOrderCreatedQueue)
+			.to(companyExchange)
+			.with(COMPANY_ORDER_CREATED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding productOrderCreatedBinding(Queue productOrderCreatedQueue, TopicExchange productExchange) {
+		return BindingBuilder.bind(productOrderCreatedQueue)
+			.to(productExchange)
+			.with(PRODUCT_ORDER_CREATED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyInactiveBinding(Queue companyInactiveQueue, TopicExchange companyInactivatedExchange) {
+		return BindingBuilder.bind(companyInactiveQueue)
+			.to(companyInactivatedExchange)
+			.with(COMPANY_INACTIVATED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyStatusChangedBinding(Queue companyStatusChangedQueue, TopicExchange companyExchange) {
+		return BindingBuilder.bind(companyStatusChangedQueue)
+			.to(companyExchange)
+			.with(COMPANY_STATUS_CHANGED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyHubChangedBinding(Queue companyHubChangedQueue, TopicExchange companyHubChangedExchange) {
+		return BindingBuilder.bind(companyHubChangedExchange)
+			.to(companyHubChangedExchange)
+			.with(COMPANY_HUB_CHANGED_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding companyReplenishBinding(Queue companyReplenishQueue, TopicExchange companyReplenishExchange) {
+		return BindingBuilder.bind(companyReplenishQueue)
+			.to(companyReplenishExchange)
+			.with(COMPANY_REPLENISH_STOCK_ROUTING_KEY);
 	}
 
 	@Bean
