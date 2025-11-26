@@ -21,7 +21,7 @@ import java.util.Map;
 public class SwaggerConfig {
 
 
-	private final String PREFIX = "/v1/product";
+	private final String PREFIX = "/v1/products";
 
 	@Bean
 	public OpenAPI openAPI(@Value("${openapi.service.url}") String url) {
@@ -29,7 +29,7 @@ public class SwaggerConfig {
 			.servers(List.of(new Server().url(url)))
 			.components(new Components().addSecuritySchemes("Bearer", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
 			.addSecurityItem(new SecurityRequirement().addList("Bearer"))
-			.info(new Info().title("스파르타 허브")
+			.info(new Info().title("스마트 로지스")
 				.description("Product API"));
 	}
 
