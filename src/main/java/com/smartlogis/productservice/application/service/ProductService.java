@@ -22,6 +22,7 @@ import com.smartlogis.productservice.domain.repository.StockHistoryRepository;
 import com.smartlogis.productservice.infrastructure.event.publisher.ProductEventPublisher;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyInactivatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.CompanyOrderCreatedEvent;
+import com.smartlogis.productservice.interfaces.dto.event.LowStockEvent;
 import com.smartlogis.productservice.interfaces.dto.event.ProductOrderCreatedEvent;
 import com.smartlogis.productservice.interfaces.dto.event.OrderCanceledEvent;
 import com.smartlogis.productservice.interfaces.dto.request.CreateProductRequest;
@@ -192,6 +193,26 @@ public class ProductService {
 
 			//기록 저장
 			stockHistoryRepository.save(stockHistory);
+
+			//재고 임계치 진입 여부 확인
+			//임계치 이하로 떨어졌다면
+			if(product.pollLowStockEventPendingAndClear()){
+
+				//필요한 보충량(타겟 재고 - 현재 재고)
+				int required = product.getTargetStock() - product.getStock();
+
+				//음수가 되는 거 방지
+				if(required < 0) required = 0;
+
+				//이벤트 발행
+				LowStockEvent lowStockEvent = new LowStockEvent(
+					product.getId(),
+					product.getCompanyId(),
+					required
+				);
+
+				productEventPublisher.publishLowStock(lowStockEvent);
+			}
 		});
 	}
 

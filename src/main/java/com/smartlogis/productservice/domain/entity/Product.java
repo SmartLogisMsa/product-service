@@ -26,6 +26,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,8 +41,15 @@ import lombok.NoArgsConstructor;
 @EntityListeners(AuditingEntityListener.class)
 public class Product extends AbstractEntity {
 
-	//재고 임계치
-	private static final int STOCK_THRESHOLD = 50;
+	//재고 임계치(이 이하로 떨어지면 재고 부족 이벤트 발행)
+	private static final int STOCK_THRESHOLD = 500;
+
+	//목표 재고(재고 보충 시 기준이 되는 안정적인 재고선)
+	private static final int TARGET_STOCK = 1000;
+
+	//이벤트 발행 여부
+	@Transient
+	private boolean lowStockEventPending = false;
 
 	//상품 식별 id
 	@Id
@@ -154,14 +162,6 @@ public class Product extends AbstractEntity {
 		this.status = ProductStatus.INACTIVE;
 	}
 
-	//재고 변경 - 관리자
-	public void changeStock(Integer newStock){
-		if(newStock == null || newStock < 0){
-			throw new InvalidStockException(ProductCode.INVALID_STOCK);
-		}
-		this.stock = newStock;
-	}
-
 	// 상품 삭제 시 비활성화
 	@Override
 	public void delete(){
@@ -215,6 +215,17 @@ public class Product extends AbstractEntity {
 
 		this.stock = after;
 
+		//재고 임계치 도달/복구
+		//1. 임계치 이하로 진입할 때
+		if(after <= STOCK_THRESHOLD && before > STOCK_THRESHOLD){
+			this.lowStockEventPending = true;
+		}
+
+		//2. 임계치 위로 복구될 때 리셋
+		if(after > STOCK_THRESHOLD && lowStockEventPending){
+			this.lowStockEventPending = false;
+		}
+
 		return StockHistory.create(
 			this.id,
 			changeType,
@@ -225,10 +236,24 @@ public class Product extends AbstractEntity {
 		);
 	}
 
+	//이벤트 발행 여부. 발행되었으면 다시 초기화
+	public boolean pollLowStockEventPendingAndClear(){
+		//이벤트 발행 안되었으면
+		if(!this.lowStockEventPending){
+			return false;
+		}
 
-	// 임계치 이하인지 판단
-	public boolean isStockBelowThreshold(){
-		return stock <= STOCK_THRESHOLD;
+		//이벤트 발행 되었으면 초기화 후 true 반환
+		this.lowStockEventPending = false;
+		return true;
+	}
+
+	public int getStockThreshold(){
+		return STOCK_THRESHOLD;
+	}
+
+	public int getTargetStock(){
+		return TARGET_STOCK;
 	}
 
 	//=======================================

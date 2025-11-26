@@ -42,6 +42,9 @@ public class RabbitMQConfig {
 	public static final String COMPANY_HUB_CHANGED_EXCHANGE = "smartlogis.company.hubId.changed.exchange";
 	public static final String COMPANY_HUB_CHANGED_ROUTING_KEY = "smartlogis.company.hubId.changed";
 
+	//재고 부족 이벤트
+	public static final String PRODUCT_LOW_STOCK_EXCHANGE = "smartlogis.product.low.stock.exchange";
+	public static final String PRODUCT_LOW_STOCK_ROUTING_KEY = "smartlogis.product.low.stock";
 
 	@Bean
 	public Queue orderCanceledQueue() {
@@ -97,6 +100,11 @@ public class RabbitMQConfig {
 	@Bean
 	public TopicExchange companyHubChangedExchange() {
 		return new TopicExchange(COMPANY_HUB_CHANGED_EXCHANGE, true, false);
+	}
+
+	@Bean
+	public TopicExchange productLowStockExchange() {
+		return new TopicExchange(PRODUCT_LOW_STOCK_EXCHANGE, true, false);
 	}
 
 	@Bean
