@@ -39,7 +39,6 @@ spring:
 eureka:
   instance:
     prefer-ip-address: false
-    hostname: code-factory.co.kr
 
   client:
     register-with-eureka: true #유레카 서버 이외에 다 붙여야 함
